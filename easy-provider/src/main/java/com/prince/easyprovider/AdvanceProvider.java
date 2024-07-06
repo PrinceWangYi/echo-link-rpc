@@ -29,7 +29,8 @@ public class AdvanceProvider {
         RegistryConfig registryConfig = rpcConfig.getRegistryConfig();
         Registry registry = RegistryFactory.getRegistry(registryConfig.getRegistry());
         try {
-            registry.register(ServiceMetaInfo.builder().serviceHost(rpcConfig.getHost()).servicePort(rpcConfig.getPort()).build());
+            registry.register(ServiceMetaInfo.builder().serviceName(serviceName).serviceHost(rpcConfig.getHost()).servicePort(rpcConfig.getPort())
+                    .serviceVersion(RpcConstant.DEFAULT_SERVICE_VERSION).build());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

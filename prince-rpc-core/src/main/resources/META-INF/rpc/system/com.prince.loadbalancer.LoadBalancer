@@ -1,0 +1,3 @@
+roundRobin=com.prince.loadbalancer.RoundRobinLoadBalancer
+random=com.prince.loadbalancer.RandomLoadBalancer
+consistentHash=com.prince.loadbalancer.ConsistentHashLoadBalancer

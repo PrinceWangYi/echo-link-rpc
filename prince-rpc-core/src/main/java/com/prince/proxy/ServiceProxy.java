@@ -7,6 +7,8 @@ import com.prince.RpcApplication;
 import com.prince.config.RegistryConfig;
 import com.prince.config.RpcConfig;
 import com.prince.constant.RpcConstant;
+import com.prince.loadbalancer.LoadBalancer;
+import com.prince.loadbalancer.LoadBalancerFactory;
 import com.prince.model.RpcRequest;
 import com.prince.model.RpcResponse;
 import com.prince.model.ServiceMetaInfo;
@@ -20,7 +22,9 @@ import com.prince.server.tcp.VertxTpcClient;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ServiceProxy implements InvocationHandler {
 
@@ -36,7 +40,6 @@ public class ServiceProxy implements InvocationHandler {
 
         RpcConfig rpcConfig = RpcApplication.getRpcConfig();
         Registry registry = RegistryFactory.getRegistry(rpcConfig.getRegistryConfig().getRegistry());
-//        registry.init(rpcConfig.getRegistryConfig());
         ServiceMetaInfo serviceMetaInfo = ServiceMetaInfo.builder()
                 .serviceName(serviceName).serviceVersion(RpcConstant.DEFAULT_SERVICE_VERSION).build();
         List<ServiceMetaInfo> serviceMetaInfos = registry.serviceDiscovery(serviceMetaInfo.getServiceKey());
@@ -45,8 +48,11 @@ public class ServiceProxy implements InvocationHandler {
             throw new RuntimeException("暂无服务地址");
         }
 
-        // 选择服务
-        ServiceMetaInfo metaInfo = serviceMetaInfos.get(0);
+        // 选择服务, 负载均衡
+        LoadBalancer balancer = LoadBalancerFactory.getInstance(rpcConfig.getLoadBalancer());
+        Map<String, Object> requestParams = new HashMap<>();
+        requestParams.put("requestParams", rpcRequest.getMethodName());
+        ServiceMetaInfo metaInfo = balancer.select(requestParams, serviceMetaInfos);
 
         RpcResponse response = VertxTpcClient.doRequest(rpcRequest, metaInfo);
         return response.getData();
