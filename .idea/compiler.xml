@@ -12,18 +12,24 @@
         <outputRelativeToContentRoot value="true" />
         <module name="easy-provider" />
         <module name="rpc-common" />
-        <module name="rpc-easy" />
         <module name="prince-rpc-core" />
         <module name="easy-consumer" />
+        <module name="rpc-provider" />
+        <module name="prince-rpc-starter" />
+        <module name="rpc-consumer" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel target="8">
       <module name="easy-consumer (1)" target="1.5" />
+      <module name="rpc-easy" target="1.8" />
     </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="easy-provider" options="" />
+      <module name="prince-rpc-starter" options="" />
+      <module name="rpc-consumer" options="" />
+      <module name="rpc-provider" options="" />
     </option>
   </component>
 </project>
