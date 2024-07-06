@@ -15,6 +15,8 @@ import com.prince.model.ServiceMetaInfo;
 import com.prince.registry.Registry;
 import com.prince.registry.RegistryFactory;
 import com.prince.registry.RegistryKeys;
+import com.prince.retry.RetryStrategy;
+import com.prince.retry.RetryStrategyFactory;
 import com.prince.serialize.Serializer;
 import com.prince.serialize.SerializerFactory;
 import com.prince.server.tcp.VertxTcpServer;
@@ -54,7 +56,9 @@ public class ServiceProxy implements InvocationHandler {
         requestParams.put("requestParams", rpcRequest.getMethodName());
         ServiceMetaInfo metaInfo = balancer.select(requestParams, serviceMetaInfos);
 
-        RpcResponse response = VertxTpcClient.doRequest(rpcRequest, metaInfo);
+        // 重试机制
+        RetryStrategy retryStrategy = RetryStrategyFactory.getInstance(rpcConfig.getRetryStrategy());
+        RpcResponse response = retryStrategy.retry(() -> VertxTpcClient.doRequest(rpcRequest, metaInfo));
         return response.getData();
     }
 }
