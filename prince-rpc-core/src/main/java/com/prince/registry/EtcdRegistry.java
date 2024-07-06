@@ -142,7 +142,6 @@ public class EtcdRegistry implements Registry{
                             break;
                     }
                 }
-                serviceCache.clearCache();
             });
         }
     }

@@ -23,6 +23,7 @@ public class VertxTpcClient {
         netClient.connect(serviceMetaInfo.getServicePort(), serviceMetaInfo.getServiceHost(), res -> {
             if (!res.succeeded()) {
                 System.out.println("连接失败");
+                return;
             }
             NetSocket socket = res.result();
 
@@ -48,17 +49,17 @@ public class VertxTpcClient {
             }
 
             // 接收响应
-            TcpBufferHandlerWrapper bufferHandlerWrapper = new TcpBufferHandlerWrapper(
-                    buffer -> {
-                        try {
-                            ProtocolMessage<RpcResponse> rpcResponseProtocolMessage =
-                                    (ProtocolMessage<RpcResponse>) ProtocolMessageDecoder.decode(buffer);
-                            responseFuture.complete(rpcResponseProtocolMessage.getBody());
-                        } catch (IOException e) {
-                            throw new RuntimeException("协议消息解码错误");
-                        }
-                    }
+            TcpBufferHandlerWrapper bufferHandlerWrapper = new TcpBufferHandlerWrapper(buffer -> {
+                try {
+                    ProtocolMessage<RpcResponse> rpcResponseProtocolMessage =
+                            (ProtocolMessage<RpcResponse>) ProtocolMessageDecoder.decode(buffer);
+                    responseFuture.complete(rpcResponseProtocolMessage.getBody());
+                } catch (IOException e) {
+                    throw new RuntimeException("协议消息解码错误");
+                }
+            }
             );
+
             socket.handler(bufferHandlerWrapper);
 
         });

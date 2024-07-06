@@ -9,6 +9,7 @@ import com.prince.registry.LocalRegistry;
 import com.prince.registry.Registry;
 import com.prince.registry.RegistryFactory;
 import com.prince.server.VertxHttpServer;
+import com.prince.server.tcp.VertxTcpServer;
 import com.prince.service.UserService;
 
 /**
@@ -28,13 +29,12 @@ public class AdvanceProvider {
         RegistryConfig registryConfig = rpcConfig.getRegistryConfig();
         Registry registry = RegistryFactory.getRegistry(registryConfig.getRegistry());
         try {
-            registry.register(ServiceMetaInfo.builder().serviceName(serviceName).serviceHost(rpcConfig.getHost()).servicePort(rpcConfig.getPort())
-                    .serviceVersion(RpcConstant.DEFAULT_SERVICE_VERSION).build());
+            registry.register(ServiceMetaInfo.builder().serviceHost(rpcConfig.getHost()).servicePort(rpcConfig.getPort()).build());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
-        VertxHttpServer vertxHttpServer = new VertxHttpServer();
-        vertxHttpServer.doStart(rpcConfig.getPort());
+        VertxTcpServer server = new VertxTcpServer();
+        server.doStart(rpcConfig.getPort());
     }
 }
