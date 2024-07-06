@@ -2,15 +2,18 @@ package com.prince.model;
 
 import cn.hutool.core.util.StrUtil;
 import com.prince.constant.RpcConstant;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * 服务元信息（注册信息）
  *
  */
 @Data
-@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class ServiceMetaInfo {
 
     /**
