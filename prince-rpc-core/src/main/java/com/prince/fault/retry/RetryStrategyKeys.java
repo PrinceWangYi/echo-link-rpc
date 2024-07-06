@@ -1,4 +1,4 @@
-package com.prince.retry;
+package com.prince.fault.retry;
 
 public interface RetryStrategyKeys {
 

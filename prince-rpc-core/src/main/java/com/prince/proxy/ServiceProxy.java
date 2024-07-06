@@ -4,9 +4,10 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpResponse;
 import com.prince.RpcApplication;
-import com.prince.config.RegistryConfig;
 import com.prince.config.RpcConfig;
 import com.prince.constant.RpcConstant;
+import com.prince.fault.tolerant.TolerantStrategy;
+import com.prince.fault.tolerant.TolerantStrategyFactory;
 import com.prince.loadbalancer.LoadBalancer;
 import com.prince.loadbalancer.LoadBalancerFactory;
 import com.prince.model.RpcRequest;
@@ -14,14 +15,13 @@ import com.prince.model.RpcResponse;
 import com.prince.model.ServiceMetaInfo;
 import com.prince.registry.Registry;
 import com.prince.registry.RegistryFactory;
-import com.prince.registry.RegistryKeys;
-import com.prince.retry.RetryStrategy;
-import com.prince.retry.RetryStrategyFactory;
+import com.prince.fault.retry.RetryStrategy;
+import com.prince.fault.retry.RetryStrategyFactory;
 import com.prince.serialize.Serializer;
 import com.prince.serialize.SerializerFactory;
-import com.prince.server.tcp.VertxTcpServer;
 import com.prince.server.tcp.VertxTpcClient;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -57,8 +57,30 @@ public class ServiceProxy implements InvocationHandler {
         ServiceMetaInfo metaInfo = balancer.select(requestParams, serviceMetaInfos);
 
         // 重试机制
-        RetryStrategy retryStrategy = RetryStrategyFactory.getInstance(rpcConfig.getRetryStrategy());
-        RpcResponse response = retryStrategy.retry(() -> VertxTpcClient.doRequest(rpcRequest, metaInfo));
-        return response.getData();
+        RpcResponse rpcResponse;
+        try {
+            RetryStrategy retryStrategy = RetryStrategyFactory.getInstance(rpcConfig.getRetryStrategy());
+            rpcResponse = retryStrategy.retry(() -> VertxTpcClient.doRequest(rpcRequest, metaInfo));
+        } catch (Exception e) {
+            TolerantStrategy tolerant = TolerantStrategyFactory.getInstance(rpcConfig.getTolerantStrategy());
+            rpcResponse = tolerant.doTolerant(null, e);
+        }
+        return rpcResponse.getData();
+    }
+
+    /**
+     * http版本
+     */
+    private static RpcResponse doHttpRequest(ServiceMetaInfo selectedServiceMetaInfo, RpcRequest rpcRequest) throws IOException {
+        final Serializer serializer = SerializerFactory.getSerializer(RpcApplication.getRpcConfig().getSerializer());
+        // 发送 HTTP 请求
+        try (HttpResponse httpResponse = HttpRequest.post(selectedServiceMetaInfo.getServiceAddress())
+                .body(serializer.serialize(rpcRequest))
+                .execute()) {
+            byte[] result = httpResponse.bodyBytes();
+            // 反序列化
+            RpcResponse rpcResponse = serializer.deserialize(result, RpcResponse.class);
+            return rpcResponse;
+        }
     }
 }

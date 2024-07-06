@@ -1,7 +1,8 @@
 package com.prince.config;
 
+import com.prince.fault.tolerant.TolerantStrategyKeys;
 import com.prince.loadbalancer.LoadBalancerKeys;
-import com.prince.retry.RetryStrategyKeys;
+import com.prince.fault.retry.RetryStrategyKeys;
 import com.prince.serialize.SerializerKeys;
 import lombok.Data;
 
@@ -25,4 +26,7 @@ public class RpcConfig {
     private String loadBalancer = LoadBalancerKeys.ROUND_ROBIN;
 
     private String retryStrategy = RetryStrategyKeys.FIXED_INTERVAL;
+
+    private String tolerantStrategy = TolerantStrategyKeys.FAIL_FAST;
+
 }

@@ -1,0 +1,2 @@
+failFast=com.prince.fault.tolerant.FailFastTolerantStrategy
+failSafe=com.prince.fault.tolerant.FailSafeTolerantStrategy

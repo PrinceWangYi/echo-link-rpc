@@ -1,0 +1,2 @@
+fixedInterval=com.prince.fault.retry.FixedIntervalRetryStrategy
+noRetry=com.prince.fault.retry.NoRetryStrategy

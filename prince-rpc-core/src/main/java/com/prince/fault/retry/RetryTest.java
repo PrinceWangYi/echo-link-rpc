@@ -1,4 +1,4 @@
-package com.prince.retry;
+package com.prince.fault.retry;
 
 import com.prince.model.RpcResponse;
 import lombok.SneakyThrows;
